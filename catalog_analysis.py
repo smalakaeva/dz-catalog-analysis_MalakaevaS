@@ -66,6 +66,24 @@ def decade_label(year):
 
 
 # Этап 3. Циклы
+non_comedy_titles = []
+for movie in movies:
+    if "comedy" in movie["genres"]:
+        continue
+    non_comedy_titles.append(movie["title"])
+    # print(movie["title"])
+
+index = 0
+while index < len(movies):
+    if movies[index]["rating"] > 9.0:
+        first_masterpiece = movies[index]["title"]
+        break
+    index += 1
+else:
+    first_masterpiece = "Шедевров не найдено"
+# print(first_masterpiece)
+
+
 def count_long_movies(movies, threshold=120):
     count = 0
     for movie in movies:
@@ -99,8 +117,9 @@ def titles_sorted_by_rating(movies):
 
 
 def top_n_by_rating(movies, n=3):
-    fin = [(m["title"], m["rating"]) for m in sorted(movies, key=lambda m: m["rating"], reverse=True)]
-    return fin[:n]
+    ranked = sorted(movies, key=lambda m: m["rating"], reverse=True)
+    return [(m["title"], m["rating"]) for m in ranked[:n]]
+
 
 # Этап 6. Словари
 def count_by_genre(movies):
@@ -119,12 +138,18 @@ def actor_filmography(movies):
     return filmography
 
 
+avg = average_rating(movies)
+above_average = {m["title"]: m["rating"] for m in movies if m["rating"] > avg}
+# print(above_average)
+
+
 # Этап 7. Множества
 def all_genres(movies):
     s = set()
     for mov in movies:
-        s.update(mov.get('genres' , ()))
+        s.update(mov.get("genres", ()))
     return s
+
 
 def common_actors(movie1, movie2):
     return set(movie1["actors"]) & set(movie2["actors"])
@@ -142,9 +167,14 @@ def iter_high_rated(movies, min_rating=8.0):
         if movie.get("rating", 0) >= min_rating:
             yield movie
 
+
+high_rated_lines = []
+for movie in iter_high_rated(movies):
+    high_rated_lines.append(format_report_line(movie))
+    # print(format_report_line(movie))
+
 total_duration = sum(m["duration_min"] for m in movies if m["rating"] > 7)
-#print("Суммарная длительность фильмов с рейтингом выше 7:", total_duration)
-#print()
+# print("Суммарная длительность фильмов с рейтингом выше 7:", total_duration)
 
 # Этап 9. Итоговый отчет
 def build_report(movies):
@@ -162,7 +192,7 @@ def build_report(movies):
 
     print("Фильмов по жанрам:")
     genre_counts = sorted(
-        count_by_genre(movies).items(), key=lambda item: item[1], reverse=True
+        count_by_genre(movies).items(), key=lambda item: (-item[1], item[0])
     )
     for genre, count in genre_counts:
         print(f"  {genre} — {count}")
